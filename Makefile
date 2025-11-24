@@ -6,7 +6,7 @@ help:
 	@echo "  make dev        - Установить зависимости для разработки"
 	@echo "  make run        - Запустить сервер"
 	@echo "  make test       - Запустить тесты"
-	@echo "  make format     - Форматировать код (black)"
+	@echo "  make format     - Форматировать код (black + ruff)"
 	@echo "  make lint       - Проверить код (ruff, mypy)"
 	@echo "  make clean      - Очистить временные файлы"
 	@echo "  make db-init    - Инициализировать БД"
@@ -14,11 +14,10 @@ help:
 	@echo "  make db-upgrade - Применить миграции"
 
 install:
-	pip install -r requirements.txt
+	pip install -e .
 
 dev:
-	pip install -r requirements.txt
-	pip install -e .
+	pip install -e ".[dev]"
 
 run:
 	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -27,6 +26,7 @@ test:
 	pytest tests/ -v --cov=app --cov-report=html
 
 format:
+	black app/ tests/
 	ruff check --fix app/ tests/
 
 lint:
