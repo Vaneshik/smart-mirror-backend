@@ -1,0 +1,22 @@
+[Unit]
+Description=SmartMirror Backend API
+After=network.target
+
+[Service]
+Type=simple
+User=your-user
+Group=your-user
+WorkingDirectory=/opt/smart-mirror-backend
+Environment="PATH=/opt/smart-mirror-backend/venv/bin"
+ExecStart=/opt/smart-mirror-backend/venv/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=10
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=smartmirror
+
+[Install]
+WantedBy=multi-user.target
+

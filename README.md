@@ -229,6 +229,10 @@ subprocess.Popen(['mpv', '--no-video', stream_url])
 - **FastAPI документация**: https://fastapi.tiangolo.com/
 - **Swagger UI**: http://localhost:8000/docs (после запуска сервера)
 
+## 🔗 GitHub
+
+**Репозиторий**: https://github.com/Vaneshik/smart-mirror-backend
+
 ## 📝 Лицензия
 
 MIT
