@@ -136,15 +136,15 @@ git push origin main
 ### Проверка работы API:
 ```bash
 # Проверьте что сервер отвечает
-curl http://94.228.117.244:8000/health
+curl http://94.228.117.244/health
 
 # LLM тест
-curl -X POST "http://94.228.117.244:8000/api/llm/query" \
+curl -X POST "http://94.228.117.244/api/llm/query" \
   -H "Content-Type: application/json" \
   -d '{"text": "Привет!"}'
 
 # Music тест
-curl -G "http://94.228.117.244:8000/api/music/search" \
+curl -G "http://94.228.117.244/api/music/search" \
   --data-urlencode "q=Metallica"
 ```
 
@@ -184,8 +184,8 @@ systemctl status smartmirror
 ## 5. Firewall (если нужно)
 
 ```bash
-# Откройте порт 8000
-ufw allow 8000/tcp
+# Откройте порт 80
+ufw allow 80/tcp
 
 # Проверьте статус
 ufw status
@@ -201,5 +201,5 @@ ufw status
 3. Установит зависимости
 4. Перезапустит сервис
 
-Backend будет доступен по адресу: http://94.228.117.244:8000
+Backend будет доступен по адресу: http://94.228.117.244
 

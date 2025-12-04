@@ -16,8 +16,9 @@ cp env.example .env
 make run
 ```
 
-Сервер запустится на `http://localhost:8000`  
-Документация API: `http://localhost:8000/docs`
+**Production сервер:** http://94.228.117.244  
+**Локально:** `http://localhost:8000`  
+**Документация API:** http://94.228.117.244/docs
 
 ## 📋 API Endpoints
 
