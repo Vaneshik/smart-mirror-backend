@@ -44,9 +44,11 @@ make run
 
 **Пример:**
 ```bash
-curl -X POST "http://localhost:8000/api/llm/query" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Расскажи анекдот"}'
+# Production
+curl -X POST "http://94.228.117.244/api/llm/query" -H "Content-Type: application/json" -d '{"text": "Расскажи анекдот"}'
+
+# Локально
+curl -X POST "http://localhost:8000/api/llm/query" -H "Content-Type: application/json" -d '{"text": "Расскажи анекдот"}'
 ```
 
 ---
@@ -79,8 +81,11 @@ curl -X POST "http://localhost:8000/api/llm/query" \
 
 **Пример:**
 ```bash
-curl -G "http://localhost:8000/api/music/search" \
-  --data-urlencode "q=Моргенштерн"
+# Production
+curl -G "http://94.228.117.244/api/music/search" --data-urlencode "q=Моргенштерн"
+
+# Локально
+curl -G "http://localhost:8000/api/music/search" --data-urlencode "q=Моргенштерн"
 ```
 
 ---
@@ -103,13 +108,17 @@ curl -G "http://localhost:8000/api/music/search" \
 
 **Пример:**
 ```bash
+# Production
+curl "http://94.228.117.244/api/music/track/123456/stream"
+
+# Локально
 curl "http://localhost:8000/api/music/track/123456/stream"
 ```
 
 **Воспроизведение:**
 ```bash
-# Получить URL и воспроизвести
-STREAM_URL=$(curl "http://localhost:8000/api/music/track/123456/stream" | jq -r '.stream_url')
+# Получить URL и воспроизвести (production)
+STREAM_URL=$(curl "http://94.228.117.244/api/music/track/123456/stream" | jq -r '.stream_url')
 mpv "$STREAM_URL"
 ```
 
@@ -126,6 +135,15 @@ mpv "$STREAM_URL"
 }
 ```
 
+**Пример:**
+```bash
+# Production
+curl http://94.228.117.244/health
+
+# Локально
+curl http://localhost:8000/health
+```
+
 ## ⚙️ Конфигурация
 
 Создайте файл `.env` из `env.example`:
@@ -137,12 +155,22 @@ cp env.example .env
 Заполните необходимые ключи:
 
 ```env
-# DeepSeek LLM API (получить на https://platform.deepseek.com/)
-DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
+# DeepSeek LLM API - Primary (artemox)
+DEEPSEEK_API_KEY=your-artemox-api-key
+DEEPSEEK_BASE_URL=https://api.artemox.com/v1
+
+# DeepSeek LLM API - Fallback (deepseek official)
+DEEPSEEK_FALLBACK_API_KEY=your-deepseek-api-key
+DEEPSEEK_FALLBACK_BASE_URL=https://api.deepseek.com/v1
 
 # Yandex Music (получить OAuth токен)
 YANDEX_MUSIC_TOKEN=y0_xxxxxxxxxxxxx
 ```
+
+**Fallback механизм:**
+- Сначала пытается Primary (artemox) с 2 попытками
+- Если не работает - автоматически переключается на Fallback (deepseek) с 2 попытками
+- Timeout 10 секунд для быстрого отклика умной колонки
 
 ## 🛠 Команды разработки
 
@@ -190,10 +218,13 @@ smart-mirror-backend/
 ```python
 import httpx
 
+# Используйте production API или localhost
+API_URL = "http://94.228.117.244"  # или "http://localhost:8000"
+
 # LLM запрос
 async with httpx.AsyncClient() as client:
     response = await client.post(
-        "http://localhost:8000/api/llm/query",
+        f"{API_URL}/api/llm/query",
         json={"text": "Привет!"}
     )
     llm_answer = response.json()["response"]
@@ -201,7 +232,7 @@ async with httpx.AsyncClient() as client:
 # Поиск музыки
 async with httpx.AsyncClient() as client:
     response = await client.get(
-        "http://localhost:8000/api/music/search",
+        f"{API_URL}/api/music/search",
         params={"q": "Metallica"}
     )
     tracks = response.json()["tracks"]
@@ -209,7 +240,7 @@ async with httpx.AsyncClient() as client:
 # Получить stream URL и воспроизвести
 track_id = tracks[0]["id"]
 response = await client.get(
-    f"http://localhost:8000/api/music/track/{track_id}/stream"
+    f"{API_URL}/api/music/track/{track_id}/stream"
 )
 stream_url = response.json()["stream_url"]
 
@@ -228,7 +259,8 @@ subprocess.Popen(['mpv', '--no-video', stream_url])
 - **DeepSeek API**: https://platform.deepseek.com/
 - **Яндекс OAuth**: https://oauth.yandex.ru/
 - **FastAPI документация**: https://fastapi.tiangolo.com/
-- **Swagger UI**: http://localhost:8000/docs (после запуска сервера)
+- **Swagger UI (Production)**: http://94.228.117.244/docs
+- **Swagger UI (Local)**: http://localhost:8000/docs
 
 ## 🔗 GitHub
 

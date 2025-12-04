@@ -7,19 +7,13 @@ from app.api.endpoints import llm, music
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app
-app = FastAPI(
-    title=settings.app_name,
-    debug=settings.debug,
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
+app = FastAPI(title=settings.app_name, debug=settings.debug, docs_url="/docs", redoc_url="/redoc")
 
 # Configure CORS for ROS client
 app.add_middleware(
@@ -38,11 +32,7 @@ app.include_router(music.router, prefix="/api")
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {
-        "message": "SmartMirror Backend API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+    return {"message": "SmartMirror Backend API", "version": "1.0.0", "docs": "/docs"}
 
 
 @app.get("/health")
@@ -64,4 +54,3 @@ async def startup_event():
 async def shutdown_event():
     """Shutdown event handler"""
     logger.info("SmartMirror Backend shutting down...")
-
