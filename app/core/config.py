@@ -34,5 +34,10 @@ class Settings(BaseSettings):
     # Security
     secret_key: str = "your-secret-key-change-in-production"
 
+    # Rate Limiting
+    rate_limit_enabled: bool = True
+    rate_limit_requests_per_minute: int = 60  # Overall limit
+    rate_limit_llm_requests_per_minute: int = 10  # LLM specific (expensive!)
+
 
 settings = Settings()

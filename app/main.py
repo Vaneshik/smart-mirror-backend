@@ -4,6 +4,7 @@ import logging
 
 from app.core.config import settings
 from app.api.endpoints import llm, music
+from app.api.middleware.rate_limit import RateLimitMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -23,6 +24,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add rate limiting middleware
+if settings.rate_limit_enabled:
+    app.add_middleware(
+        RateLimitMiddleware,
+        requests_per_minute=settings.rate_limit_requests_per_minute,
+        llm_requests_per_minute=settings.rate_limit_llm_requests_per_minute,
+    )
+    logger.info(
+        f"Rate limiting enabled: {settings.rate_limit_requests_per_minute} req/min overall, "
+        f"{settings.rate_limit_llm_requests_per_minute} req/min for LLM"
+    )
 
 # Include routers
 app.include_router(llm.router, prefix="/api")
