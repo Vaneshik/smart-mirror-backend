@@ -14,13 +14,13 @@ help:
 	@echo "  make db-upgrade - Применить миграции"
 
 install:
-	pip install -e .
+	pip3 install -e .
 
 dev:
-	pip install -e ".[dev]"
+	pip3 install -e ".[dev]"
 
 run:
-	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 test:
 	pytest tests/ -v --cov=app --cov-report=html
