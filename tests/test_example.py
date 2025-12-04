@@ -5,4 +5,4 @@ def test_example():
 
 def test_with_fixture(sample_data):
     """Test with fixture"""
-    assert sample_data['key'] == 'value'
+    assert sample_data["key"] == "value"

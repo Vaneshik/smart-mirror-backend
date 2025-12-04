@@ -22,11 +22,11 @@ pip install -e .
 
 # Перезапуск сервиса
 echo "🔄 Restarting service..."
-sudo systemctl restart $SERVICE_NAME
+systemctl restart $SERVICE_NAME
 
 # Проверка статуса
 echo "✅ Checking service status..."
-sudo systemctl status $SERVICE_NAME --no-pager
+systemctl status $SERVICE_NAME --no-pager
 
 echo "🎉 Deployment completed successfully!"
 
