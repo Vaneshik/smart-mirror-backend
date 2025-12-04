@@ -41,11 +41,23 @@ make run
 }
 ```
 
-**Пример:**
+**Пример (текстовый запрос):**
 ```bash
 curl -X POST "http://localhost:8000/api/llm/query" \
   -H "Content-Type: application/json" \
   -d '{"text": "Расскажи анекдот"}'
+```
+
+**Пример (музыкальная команда):**
+```bash
+curl -X POST "http://localhost:8000/api/llm/query" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Включи Моргенштерна"}'
+
+# Сервер выполнит поиск и вернёт stream URL первого найденного трека:
+# {
+#   "stream_url": "https://storage.mds.yandex.net/get-mp3/..."
+# }
 ```
 
 ---

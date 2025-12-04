@@ -1,3 +1,5 @@
+import os
+
 from yandex_music import ClientAsync
 from typing import List, Optional
 import logging
@@ -5,7 +7,20 @@ import logging
 from app.core.config import settings
 from app.schemas.music import TrackInfo
 
+try:
+    import certifi
+except ImportError:  # pragma: no cover - fallback if dependency missing
+    certifi = None  # type: ignore
+
 logger = logging.getLogger(__name__)
+
+
+def _ensure_ssl_certificates() -> None:
+    """Force OpenSSL to use certifi bundle if available."""
+    if certifi is None:
+        return
+    os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+    os.environ.setdefault("REQUESTS_CA_BUNDLE", certifi.where())
 
 
 class YandexMusicService:
@@ -14,6 +29,7 @@ class YandexMusicService:
     def __init__(self):
         self.token = settings.yandex_music_token
         self._client: Optional[ClientAsync] = None
+        _ensure_ssl_certificates()
         
     async def _get_client(self) -> ClientAsync:
         """Get or create Yandex Music client"""
@@ -111,4 +127,3 @@ class YandexMusicService:
 
 # Singleton instance
 yandex_music_service = YandexMusicService()
-
