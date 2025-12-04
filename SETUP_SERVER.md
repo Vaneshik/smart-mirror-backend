@@ -4,7 +4,7 @@
 
 ### Подключитесь к серверу:
 ```bash
-ssh your-user@94.228.117.244
+ssh root@94.228.117.244
 ```
 
 ### Установите необходимые пакеты:
@@ -21,8 +21,7 @@ sudo apt install -y build-essential libssl-dev libffi-dev
 
 ### Создайте директорию для приложения:
 ```bash
-sudo mkdir -p /opt/smart-mirror-backend
-sudo chown $USER:$USER /opt/smart-mirror-backend
+mkdir -p /opt/smart-mirror-backend
 ```
 
 ### Клонируйте репозиторий:
@@ -59,32 +58,20 @@ YANDEX_MUSIC_TOKEN=your-token
 ### Установите systemd service:
 ```bash
 # Скопируйте service файл
-sudo cp smartmirror.service /etc/systemd/system/
-
-# Отредактируйте User и Group
-sudo nano /etc/systemd/system/smartmirror.service
-# Замените "your-user" на ваш username
+cp smartmirror.service /etc/systemd/system/
 
 # Перезагрузите systemd
-sudo systemctl daemon-reload
+systemctl daemon-reload
 
 # Запустите сервис
-sudo systemctl enable smartmirror
-sudo systemctl start smartmirror
+systemctl enable smartmirror
+systemctl start smartmirror
 
 # Проверьте статус
-sudo systemctl status smartmirror
+systemctl status smartmirror
 ```
 
-### Настройте права для перезапуска без пароля:
-```bash
-# Создайте sudoers файл
-sudo visudo -f /etc/sudoers.d/smartmirror
-
-# Добавьте строку (замените your-user на ваш username):
-your-user ALL=(ALL) NOPASSWD: /bin/systemctl restart smartmirror
-your-user ALL=(ALL) NOPASSWD: /bin/systemctl status smartmirror
-```
+### (Для root это не требуется - пропускаем этот шаг)
 
 ### Сделайте deploy.sh исполняемым:
 ```bash
@@ -113,7 +100,7 @@ ssh-copy-id -i ~/.ssh/smartmirror_deploy.pub your-user@94.228.117.244
 
 **SSH_USER**
 ```
-your-user
+root
 ```
 
 **SSH_PRIVATE_KEY**
@@ -132,7 +119,7 @@ cat ~/.ssh/smartmirror_deploy
 
 ### Тест деплоя вручную:
 ```bash
-ssh your-user@94.228.117.244 "cd /opt/smart-mirror-backend && ./deploy.sh"
+ssh root@94.228.117.244 "cd /opt/smart-mirror-backend && ./deploy.sh"
 ```
 
 ### Тест автоматического деплоя:
@@ -168,28 +155,28 @@ curl -G "http://94.228.117.244:8000/api/music/search" \
 ### Просмотр логов сервиса:
 ```bash
 # Следить за логами в реальном времени
-sudo journalctl -u smartmirror -f
+journalctl -u smartmirror -f
 
 # Последние 100 строк
-sudo journalctl -u smartmirror -n 100
+journalctl -u smartmirror -n 100
 
 # За последний час
-sudo journalctl -u smartmirror --since "1 hour ago"
+journalctl -u smartmirror --since "1 hour ago"
 ```
 
 ### Управление сервисом:
 ```bash
 # Перезапуск
-sudo systemctl restart smartmirror
+systemctl restart smartmirror
 
 # Остановка
-sudo systemctl stop smartmirror
+systemctl stop smartmirror
 
 # Запуск
-sudo systemctl start smartmirror
+systemctl start smartmirror
 
 # Статус
-sudo systemctl status smartmirror
+systemctl status smartmirror
 ```
 
 ---
@@ -198,10 +185,10 @@ sudo systemctl status smartmirror
 
 ```bash
 # Откройте порт 8000
-sudo ufw allow 8000/tcp
+ufw allow 8000/tcp
 
 # Проверьте статус
-sudo ufw status
+ufw status
 ```
 
 ---
