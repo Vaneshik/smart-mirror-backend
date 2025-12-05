@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     deepseek_api_key: str = ""
     deepseek_base_url: str = "https://api.artemox.com/v1"
     deepseek_model: str = "deepseek-chat"
-    deepseek_timeout: int = 10
+    deepseek_timeout: int = 20
     deepseek_max_tokens: int = 150  # Ограничение для коротких ответов (умная колонка)
     deepseek_temperature: float = 0.7
 

@@ -24,7 +24,7 @@ class DeepSeekService:
 
         self.timeout = settings.deepseek_timeout
         self.max_retries = settings.llm_max_retries
-        
+
         # Response limits
         self.max_tokens = settings.deepseek_max_tokens
         self.temperature = settings.deepseek_temperature
@@ -34,31 +34,31 @@ class DeepSeekService:
     ) -> str:
         """Try to get response from a specific provider"""
         if not api_key:
-            raise ValueError(f"{provider_name} API key not configured")
+            raise ValueError(f'{provider_name} API key not configured')
 
         payload = {
-            "model": model,
-            "messages": messages,
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
+            'model': model,
+            'messages': messages,
+            'temperature': self.temperature,
+            'max_tokens': self.max_tokens,
         }
 
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        headers = {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
-                f"{base_url}/chat/completions", json=payload, headers=headers
+                f'{base_url}/chat/completions', json=payload, headers=headers
             )
             response.raise_for_status()
 
             data = response.json()
 
             # Extract response text
-            if "choices" in data and len(data["choices"]) > 0:
-                return data["choices"][0]["message"]["content"]
+            if 'choices' in data and len(data['choices']) > 0:
+                return data['choices'][0]['message']['content']
             else:
-                logger.error(f"Unexpected API response format from {provider_name}: {data}")
-                raise ValueError(f"Invalid response format from {provider_name} API")
+                logger.error(f'Unexpected API response format from {provider_name}: {data}')
+                raise ValueError(f'Invalid response format from {provider_name} API')
 
     async def query(self, text: str, system_prompt: Optional[str] = None) -> str:
         """
@@ -81,8 +81,8 @@ class DeepSeekService:
         # Prepare messages
         messages = []
         if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": text})
+            messages.append({'role': 'system', 'content': system_prompt})
+        messages.append({'role': 'user', 'content': text})
 
         last_error = None
 
@@ -90,54 +90,54 @@ class DeepSeekService:
         for attempt in range(self.max_retries):
             try:
                 logger.info(
-                    f"Trying primary provider (artemox), attempt {attempt + 1}/{self.max_retries}"
+                    f'Trying primary provider (artemox), attempt {attempt + 1}/{self.max_retries}'
                 )
                 result = await self._try_provider(
                     self.primary_api_key,
                     self.primary_base_url,
                     self.primary_model,
                     messages,
-                    "artemox",
+                    'artemox',
                 )
-                logger.info("✓ Primary provider (artemox) succeeded")
+                logger.info('✓ Primary provider (artemox) succeeded')
                 return result
 
             except Exception as e:
                 last_error = e
-                logger.warning(f"Primary provider (artemox) attempt {attempt + 1} failed: {str(e)}")
+                logger.warning(f'Primary provider (artemox) attempt {attempt + 1} failed: {str(e)}')
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(0.5)  # Short delay between retries
 
         # Fallback to secondary provider (deepseek)
         if self.fallback_api_key:
-            logger.info("Falling back to secondary provider (deepseek)")
+            logger.info('Falling back to secondary provider (deepseek)')
 
             for attempt in range(self.max_retries):
                 try:
                     logger.info(
-                        f"Trying fallback provider (deepseek), attempt {attempt + 1}/{self.max_retries}"
+                        f'Trying fallback provider (deepseek), attempt {attempt + 1}/{self.max_retries}'
                     )
                     result = await self._try_provider(
                         self.fallback_api_key,
                         self.fallback_base_url,
                         self.fallback_model,
                         messages,
-                        "deepseek",
+                        'deepseek',
                     )
-                    logger.info("✓ Fallback provider (deepseek) succeeded")
+                    logger.info('✓ Fallback provider (deepseek) succeeded')
                     return result
 
                 except Exception as e:
                     last_error = e
                     logger.warning(
-                        f"Fallback provider (deepseek) attempt {attempt + 1} failed: {str(e)}"
+                        f'Fallback provider (deepseek) attempt {attempt + 1} failed: {str(e)}'
                     )
                     if attempt < self.max_retries - 1:
                         await asyncio.sleep(0.5)
 
         # All providers failed
-        logger.error(f"All LLM providers failed. Last error: {str(last_error)}")
-        raise Exception(f"All LLM providers failed: {str(last_error)}")
+        logger.error(f'All LLM providers failed. Last error: {str(last_error)}')
+        raise Exception(f'All LLM providers failed: {str(last_error)}')
 
 
 # Singleton instance
