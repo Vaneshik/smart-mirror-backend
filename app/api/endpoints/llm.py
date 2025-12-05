@@ -12,14 +12,14 @@ from app.services.music.yandex import yandex_music_service
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/llm", tags=["LLM"])
+router = APIRouter(prefix='/llm', tags=['LLM'])
 
 MUSIC_DETECTION_PROMPT = (
-    "Ты анализируешь команды пользователя умного зеркала. Если он просит включить, проиграть,"
-    " или воспроизвести музыку, песню, исполнителя или плейлист, ответь строго JSON без лишнего"
-    " текста в формате {\"is_music_command\": true, \"query\": \"название\"}."
-    " Если запрос не о музыке, верни {\"is_music_command\": false, \"query\": \"\"}."
-    " Query должен содержать только исполнителя/трек без служебных слов."
+    'Ты анализируешь команды пользователя умного зеркала. Если он просит включить, проиграть,'
+    ' или воспроизвести музыку, песню, исполнителя или плейлист, ответь строго JSON без лишнего'
+    ' текста в формате {"is_music_command": true, "query": "название"}.'
+    ' Если запрос не о музыке, верни {"is_music_command": false, "query": ""}.'
+    ' Query должен содержать только исполнителя/трек без служебных слов.'
 )
 
 
@@ -28,17 +28,17 @@ def _parse_music_detection(raw_response: str) -> Optional[str]:
     try:
         data = json.loads(raw_response)
     except json.JSONDecodeError:
-        match = re.search(r"\{.*\}", raw_response, re.DOTALL)
+        match = re.search(r'\{.*\}', raw_response, re.DOTALL)
         if not match:
-            logger.warning("Unable to parse music detection response: %s", raw_response)
+            logger.warning('Unable to parse music detection response: %s', raw_response)
             return None
         try:
             data = json.loads(match.group(0))
         except json.JSONDecodeError:
-            logger.warning("Unable to parse extracted detection JSON: %s", match.group(0))
+            logger.warning('Unable to parse extracted detection JSON: %s', match.group(0))
             return None
-    is_music = bool(data.get("is_music_command"))
-    query = (data.get("query") or "").strip()
+    is_music = bool(data.get('is_music_command'))
+    query = (data.get('query') or '').strip()
     if is_music and query:
         return query
     return None
@@ -58,14 +58,14 @@ async def _handle_music_command(query: str) -> TrackStreamResponse:
     try:
         tracks = await yandex_music_service.search_tracks(query=query, limit=1)
     except ValueError as e:
-        logger.error(f"Music service configuration error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Music service not configured properly")
+        logger.error(f'Music service configuration error: {str(e)}')
+        raise HTTPException(status_code=500, detail='Music service not configured properly')
     except Exception as e:
-        logger.error(f"Error searching music: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to search music: {str(e)}")
+        logger.error(f'Error searching music: {str(e)}')
+        raise HTTPException(status_code=500, detail=f'Failed to search music: {str(e)}')
 
     if not tracks:
-        logger.info(f"No tracks found for query: {query}")
+        logger.info(f'No tracks found for query: {query}')
         raise HTTPException(status_code=404, detail=f"No tracks found for query '{query}'")
 
     track_id = tracks[0].id
@@ -73,50 +73,54 @@ async def _handle_music_command(query: str) -> TrackStreamResponse:
         stream_url = await yandex_music_service.get_track_download_url(track_id=track_id)
         return TrackStreamResponse(stream_url=stream_url)
     except ValueError as e:
-        logger.error(f"Track unavailable: {str(e)}")
+        logger.error(f'Track unavailable: {str(e)}')
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"Error getting stream URL: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get stream URL: {str(e)}")
+        logger.error(f'Error getting stream URL: {str(e)}')
+        raise HTTPException(status_code=500, detail=f'Failed to get stream URL: {str(e)}')
 
 
-@router.post("/query", response_model=Union[LLMQueryResponse, TrackStreamResponse])
+@router.post('/query', response_model=Union[LLMQueryResponse, TrackStreamResponse])
 async def query_llm(request: LLMQueryRequest) -> Union[LLMQueryResponse, TrackStreamResponse]:
     """
     Send query to LLM and get response
-    
+
     - **text**: User query text (string input)
-    
+
     Returns text response from LLM
     """
     try:
         # First check if user asks to play music using LLM intent detection
         music_query = await _detect_music_command(request.text)
         if music_query:
-            logger.info(f"Detected music command for query: {music_query}")
+            logger.info(f'Detected music command for query: {music_query}')
             return await _handle_music_command(music_query)
 
-        logger.info(f"Processing LLM query: {request.text[:50]}...")
-        
+        logger.info(f'Processing LLM query: {request.text[:50]}...')
+
         # Query DeepSeek API for regular text requests
         response_text = await deepseek_service.query(
             text=request.text,
-            system_prompt="Ты дружелюбный голосовой ассистент для умного зеркала. Отвечай кратко и по делу."
+            system_prompt=(
+                'Ты голосовой ассистент умного зеркала. '
+                'Отвечай ОЧЕНЬ КРАТКО - максимум 2-3 коротких предложения. '
+                'Ответ будет озвучен голосом, поэтому избегай длинных текстов и списков.'
+            ),
         )
-        
-        logger.info(f"LLM response received: {response_text[:50]}...")
-        
+
+        logger.info(f'LLM response received: {response_text[:50]}...')
+
         return LLMQueryResponse(response=response_text)
-        
+
     except ValueError as e:
-        logger.error(f"Configuration error: {str(e)}")
-        raise HTTPException(status_code=500, detail="LLM service not configured properly")
+        logger.error(f'Configuration error: {str(e)}')
+        raise HTTPException(status_code=500, detail='LLM service not configured properly')
     except Exception as e:
-        logger.error(f"Error processing LLM query: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to process LLM query: {str(e)}")
+        logger.error(f'Error processing LLM query: {str(e)}')
+        raise HTTPException(status_code=500, detail=f'Failed to process LLM query: {str(e)}')
 
 
-@router.get("/health")
+@router.get('/health')
 async def health_check():
     """Health check endpoint for LLM service"""
-    return {"status": "ok", "service": "llm"}
+    return {'status': 'ok', 'service': 'llm'}

@@ -24,6 +24,10 @@ class DeepSeekService:
 
         self.timeout = settings.deepseek_timeout
         self.max_retries = settings.llm_max_retries
+        
+        # Response limits
+        self.max_tokens = settings.deepseek_max_tokens
+        self.temperature = settings.deepseek_temperature
 
     async def _try_provider(
         self, api_key: str, base_url: str, model: str, messages: list, provider_name: str
@@ -32,7 +36,12 @@ class DeepSeekService:
         if not api_key:
             raise ValueError(f"{provider_name} API key not configured")
 
-        payload = {"model": model, "messages": messages, "temperature": 0.7, "max_tokens": 500}
+        payload = {
+            "model": model,
+            "messages": messages,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+        }
 
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
